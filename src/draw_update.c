@@ -11,7 +11,14 @@
 /* ************************************************************************** */
 
 /*
-** Try changing the coordinate system as it changes.
+** These functions drive all of julia and mandelbrot rendering. Draw_update is
+** the lead function which will control the entire process. Draw_update after
+** initializing a new window will call sweep_and_color. Multiple threads are
+** created and then sent to send_out. Each send_out is in charge of one pixel
+** for every thread. So the first thread is in charge of pixel 0, 8, 16 and
+** onward. Send_out will then determine which fractal to call depending on
+** user defined mode. Shift_xcoord and shift_ycoord can be found in
+** src/utilities/misc.c
 */
 
 #include "fract.h"

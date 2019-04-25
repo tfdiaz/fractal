@@ -11,7 +11,11 @@
 /* ************************************************************************** */
 
 /*
-** Comment
+** This is a Julia, Mandelbrot, Flame fractal generator. This is one project
+** within the 42 school curriculum that I've expanded on. 42 requires only 5
+** functions per file and no function must be more than 25 lines. I've tried
+** my best, within these constrains to have everything to be very
+** understandable. Feel free to reach out at tomaswrites.com
 */
 
 #include "fract.h"
