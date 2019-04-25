@@ -20,8 +20,6 @@
 
 static void	flame_press(int keycode, t_mlx *mlx)
 {
-	if (keycode == KEY_F)
-		mlx->freeze ^= 1;
 	if (keycode == KEY_A)
 		newframe(mlx);
 	if (keycode == KEY_LEFT_ARROW)
@@ -57,6 +55,8 @@ int			key_press(int keycode, void *param)
 		flame_press(keycode, mlx);
 	else
 	{
+		if (keycode == KEY_F)
+			mlx->freeze ^= 1;
 		if (keycode == KEY_PLUS)
 			change_iter(1, mlx);
 		if (keycode == KEY_MIN)
