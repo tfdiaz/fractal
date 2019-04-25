@@ -11,87 +11,90 @@
 /* ************************************************************************** */
 
 /*
-** Try changing the coordinate system as it changes. 
+** Try changing the coordinate system as it changes.
 */
 
 #include "fract.h"
 
-int		iterator(int x, int y, t_mlx *mlx)
+static double	julia(double x, double y, t_mlx *mlx)
 {
-	x = (x - mlx->org_x);
-	y = -1 * (y - mlx->org_y);
-	double zx = ((double)x / WIND_X) * mlx->zoom + mlx->x_shift;
-	double zy = ((double)y / WIND_Y) * mlx->zoom + mlx->y_shift;
-	double xtemp;
+	double	zx;
+	double	zy;
+	double	xtemp;
+	int		iter;
 
-	int iter = 0;
+	zx = shift_xcoord(x, mlx);
+	zy = shift_ycoord(y, mlx);
+	iter = 0;
 	while (zx * zx + zy * zy < 4 && iter < mlx->iter_amount)
 	{
 		xtemp = zx * zx - zy * zy;
 		zy = 2 * zx * zy + mlx->con_y;
 		zx = xtemp + mlx->con_x;
-
 		iter += 1;
 	}
-
-	if (iter == mlx-> iter_amount)
-		return 0;
+	if (iter == mlx->iter_amount)
+		return (0.0);
 	else
-		return (iter);
+		return ((double)iter);
 }
 
-// int		iterator(int x, int y, t_mlx *mlx)
-// {
-// 	double zx = ((double)x / WIND_X) * 3.5 - 2.5;
-// 	double zy = ((double)y / WIND_Y) * 2.0 - 1;
-// 	double xtemp;
-
-// 	int iter = 0;
-// 	while (zx * zx + zy * zy < 4 && iter < MAX_ITER)
-// 	{
-// 		xtemp = pow((zx * zx + zy * zy),(BODY_COUNT/2)) * cos(BODY_COUNT * atan2(zy, zx)) + mlx->con_x;
-// 		zy = pow((zx * zx + zy * zy),(BODY_COUNT/2)) * sin(BODY_COUNT * atan2(zy, zx)) + mlx->con_y;
-// 		zx = xtemp;
-
-// 		iter += 1;
-// 	}
-
-// 	if (iter == MAX_ITER)
-// 		return 0;
-// 	else
-// 		return (iter);
-// }
-
-void	*oct1(void *param)
+static double	mandel(double x, double y, t_mlx *mlx)
 {
-	int x;
-	int y;
-	t_par *par;
-	t_mlx *mlx;
+	double	x0;
+	double	y0;
+	double	xtemp;
+	int		iter;
+
+	x0 = shift_xcoord(x, mlx);
+	y0 = shift_ycoord(y, mlx);
+	x = 0.0;
+	y = 0.0;
+	iter = 0;
+	while (x * x + y * y <= 4 && iter < mlx->iter_amount)
+	{
+		xtemp = (x * x) - (y * y) + x0;
+		y = (2 * x * y) + y0;
+		x = xtemp;
+		iter += 1;
+	}
+	if (iter == mlx->iter_amount)
+		return (0.0);
+	else
+		return (double)iter;
+}
+
+static void		*send_out(void *param)
+{
+	int		x;
+	int		y;
+	int		val;
+	t_par	*par;
+	t_mlx	*mlx;
 
 	par = (t_par *)param;
 	mlx = par->mlx;
-	int val = par->mod;
+	val = par->mod;
 	y = 0;
 	while (y < WIND_Y)
 	{
 		x = val;
 		while (x < WIND_X)
 		{
-			t_color color = set_color(mlx, iterator(x, y, mlx));
-			update_img(mlx, x, y, color);
+			update_img(mlx, x, y,
+				set_color(mlx, par->funct((double)x, (double)y, mlx)));
 			x += THREAD_COUNT;
 		}
 		y++;
 	}
-	return NULL;
+	return (NULL);
 }
 
-void	sweep_and_color(t_mlx *mlx)
+static void		sweep_and_color(t_mlx *mlx)
 {
-	pthread_t val[THREAD_COUNT];
-	t_par *arr[THREAD_COUNT];
-	int i;
+	pthread_t	val[THREAD_COUNT];
+	t_par		*arr[THREAD_COUNT];
+	int			i;
 
 	i = 0;
 	while (i < THREAD_COUNT)
@@ -99,7 +102,11 @@ void	sweep_and_color(t_mlx *mlx)
 		arr[i] = (t_par*)malloc(sizeof(t_par));
 		arr[i]->mlx = mlx;
 		arr[i]->mod = i;
-		pthread_create(&val[i], NULL, oct1, (void*)arr[i]);
+		if (mlx->mode == 0)
+			arr[i]->funct = julia;
+		else
+			arr[i]->funct = mandel;
+		pthread_create(&val[i], NULL, send_out, (void*)arr[i]);
 		i++;
 	}
 	i = 0;
@@ -111,7 +118,7 @@ void	sweep_and_color(t_mlx *mlx)
 	}
 }
 
-void		draw_update(t_mlx *mlx)
+void			draw_update(t_mlx *mlx)
 {
 	int bpp;
 	int size_line;
@@ -123,23 +130,5 @@ void		draw_update(t_mlx *mlx)
 	mlx->sl = size_line;
 	sweep_and_color(mlx);
 	mlx_put_image_to_window(mlx->mlx_ptr, mlx->win_ptr, mlx->image, 0, 0);
+	help_screen(mlx);
 }
-
-// void	sweep_and_color(t_mlx *mlx)
-// {
-// 	int x;
-// 	int y;
-
-// 	y = 0;
-// 	while (y < WIND_Y)
-// 	{
-// 		x = 0;
-// 		while (x < WIND_X)
-// 		{
-// 			mlx->color = set_color(mlx, iterator(x, y, mlx));
-// 			update_img(mlx, x, y);
-// 			x++;
-// 		}
-// 		y++;
-// 	}
-// }

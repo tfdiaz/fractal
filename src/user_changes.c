@@ -20,11 +20,20 @@ void	reset(t_mlx *mlx)
 {
 	mlx_destroy_image(mlx->mlx_ptr, mlx->image);
 	mlx->zoom = 4.0;
-	mlx->org_x = WIND_X/2;
-	mlx->org_y = WIND_Y/2;
+	mlx->org_x = WIND_X / 2;
+	mlx->org_y = WIND_Y / 2;
 	mlx->x_shift = 0;
 	mlx->y_shift = 0;
-	draw_update(mlx);
+	mlx->iter_amount = 230;
+	mlx->flame_zoom = 1.0;
+	mlx->flame_rot = 3.0;
+	mlx->flame_sample = 800;
+	mlx->flame_x_shift = 0;
+	mlx->flame_y_shift = 0;
+	if (mlx->mode == 2)
+		draw_flame(mlx);
+	else
+		draw_update(mlx);
 }
 
 void	destroy(t_mlx *mlx)
@@ -33,27 +42,29 @@ void	destroy(t_mlx *mlx)
 	exit(0);
 }
 
-void	color_shift(char type, t_mlx *mlx)
+void	color_shift(t_mlx *mlx)
 {
 	mlx_destroy_image(mlx->mlx_ptr, mlx->image);
-	mlx->color_mode = (int)type;
+	mlx->color_mode ^= 1;
 	draw_update(mlx);
 }
 
-// void	xy_shift(char type, t_mlx *mlx)
-// {
-// 	mlx_destroy_image(mlx->mlx_ptr, mlx->image);
-// 	if (type)
-// 	{
-// 		mlx->xy_shift += SPEED;
-// 		if (mlx->xy_shift > 1.0)
-// 			mlx->xy_shift = 1.0;
-// 	}
-// 	else
-// 	{
-// 		mlx->xy_shift -= SPEED;
-// 		if (mlx->xy_shift < -1.0)
-// 			mlx->xy_shift = -1.0;
-// 	}
-// 	draw_update(mlx);
-// }
+void	change_iter(char increase, t_mlx *mlx)
+{
+	mlx_destroy_image(mlx->mlx_ptr, mlx->image);
+	if (increase)
+		mlx->iter_amount += 10;
+	else
+		mlx->iter_amount -= 10;
+	draw_update(mlx);
+}
+
+void	mode_shift(t_mlx *mlx, int type)
+{
+	mlx_destroy_image(mlx->mlx_ptr, mlx->image);
+	mlx->mode = type;
+	if (type < 2)
+		draw_update(mlx);
+	else
+		draw_flame(mlx);
+}

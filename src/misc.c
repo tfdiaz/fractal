@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 /*
-**
+** Comment
 */
 
 #include "fract.h"
@@ -26,17 +26,12 @@ int				closes(void *param)
 	return (0);
 }
 
-unsigned int	set_color(t_mlx *mlx, int iter)
+unsigned int	set_color(t_mlx *mlx, double iter)
 {
-	int		shift;
-
-	if (mlx->color_mode == 1)
-	{
-		shift = iter * 70000;
-		return (mlx_get_color_value(mlx->mlx_ptr, 0x000000 + shift));
-	}
+	if (mlx->color_mode == 0)
+		return (color_smooth(mlx, iter));
 	else
-		return (mlx_get_color_value(mlx->mlx_ptr, 0x00FFFF));
+		return (color_crazy(mlx, iter));
 }
 
 void			update_img(t_mlx *mlx, int x, int y, t_color color)
@@ -50,4 +45,16 @@ void			update_img(t_mlx *mlx, int x, int y, t_color color)
 			(color >> (8 * j)) & 0xFF;
 		j++;
 	}
+}
+
+double			shift_xcoord(double x, t_mlx *mlx)
+{
+	x = (x - mlx->org_x);
+	return ((x / WIND_X) * mlx->zoom + mlx->x_shift);
+}
+
+double			shift_ycoord(double y, t_mlx *mlx)
+{
+	y = -1 * (y - mlx->org_y);
+	return ((y / WIND_Y) * mlx->zoom + mlx->y_shift);
 }
