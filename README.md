@@ -66,4 +66,4 @@ If you run into any issues let me know.
 
 ![alt_text](assets/flame3.png)
 
-*Mode: 4 - High Sample - More Rotations*
+*Mode: 3 - High Sample - More Rotations*
